@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -22,11 +24,34 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
+###########
+## Build ##
+###########
+
+add_library(apriltags
+  STATIC
+  CameraUtil.cpp
+  DebugImage.cpp
+  Geometry.cpp
+  GrayModel.cpp
+  MathUtil.cpp
+  Refine.cpp
+  TagDetector.cpp
+  TagFamily.cpp
+  TagFamilies.cpp
+  UnionFindSimple.cpp
+)
+
+set(AT_LIBS apriltags ${OPENCV_LDFLAGS})
+target_link_libraries(apriltags ${AT_LIBS})
+
 add_executable(dji_sdk_read_cam src/nv_cam.cpp)
+
 link_directories(/usr/local/lib /usr/lib/arm-linux-gnueabihf /usr/lib)
 target_link_libraries(
   dji_sdk_read_cam
   dcam
+  ${AT_LIBS}
   ${catkin_LIBRARIES}
 # link opencv libraries
   ${OpenCV_LIBRARIES}
