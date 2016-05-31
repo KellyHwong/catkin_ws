@@ -101,6 +101,7 @@ int main(int argc, char **argv)
 
                 drone->request_sdk_permission_control();
                 drone->takeoff();
+                printf("Taking off finished!");
                 for(int i=0;i<100;i++){
                     drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
                 }
                 //sleep(1);
                 drone->landing();
-
+                printf("Landing finished!");
 				break;
             case 'b':
                 /* request control ability*/
@@ -129,6 +130,7 @@ int main(int argc, char **argv)
             case 'e':
                 /* landing*/
                 drone->landing();
+                printf("Landing finished!");
                 break;
             case 'f':
                 /* go home*/
