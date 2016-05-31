@@ -290,6 +290,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+    int aprilTagCount = 0;
+
 	while(1)
 	{
 		ret = manifold_cam_read(buffer, &nframe, 1);
@@ -314,41 +316,40 @@ int main(int argc, char **argv)
 				cvi.encoding = "mono8";
 			}
 
-      //cvi.image = pImg;
+          //cvi.image = pImg;
+          //pRawImg
+          //cv::Mat matImg(pImg,0);
+          cv::Mat matImg(pRawImg,0); //1280*720
 
+          /* while (std::max(matImg.rows, matImg.cols) > 800) {
+            cv::Mat tmp;
+            cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
+            matImg = tmp;
+          } */
+          cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
+          detector.process(matImg, opticalCenter, detections);
 
-      //pRawImg
-      //cv::Mat matImg(pImg,0);
-      cv::Mat matImg(pRawImg,0); //1280*720
+          if(detections.size() > 0) {
+              aprilTagCount++;
+               std::cout << "AprilTag detected!" << "\n";
+               printf("saving pictures...\n");
+               //char* home = "//home//ubuntu//";
+                if(aprilTagCount<=100){
+                    std::stringstream sstream;
+                     sstream << "imageApril" << aprilTagCount << ".png";
+                     ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
+                }
 
-      //printf("saving pictures...\n");
-      //char* home = "//home//ubuntu//";
-
-      //std::stringstream sstream;
-      //sstream << "my_image" << nCount << ".png";
-      //ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
-
-      while (std::max(matImg.rows, matImg.cols) > 800) {
-        cv::Mat tmp;
-        cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
-        matImg = tmp;
-      }
-      cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
-      detector.process(matImg, opticalCenter, detections);
-
-      if(detections.size() > 0) {
-        std::cout << "AprilTag detected!" << "\n";
-      }
-      // if(detections.size() > 0) {
-      //   std::cout << "Got " << detections.size() << " detections " << "\n";
-      //   for (size_t i=0; i<detections.size(); ++i) {
-      //     const TagDetection& d = detections[i];
-      //     std::cout << " - Detection: id = " << d.id << ", "
-      //                << "code = " << d.code << ", "
-      //                   << "rotation = " << d.rotation << "\n";
-      //   }
-      // }
-
+          }
+          // if(detections.size() > 0) {
+          //   std::cout << "Got " << detections.size() << " detections " << "\n";
+          //   for (size_t i=0; i<detections.size(); ++i) {
+          //     const TagDetection& d = detections[i];
+          //     std::cout << " - Detection: id = " << d.id << ", "
+          //                << "code = " << d.code << ", "
+          //                   << "rotation = " << d.rotation << "\n";
+          //   }
+          // }
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
 			cam_info.header.stamp = time;
