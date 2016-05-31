@@ -107,7 +107,7 @@ int main(int argc, char **argv)
                 for(int i=0;i<100;i++){
                     drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
-                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::YawLogic::YAW_PALSTANCE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
                             Flight::SmoothMode::SMOOTH_ENABLE,
                             0, 0, 0, 0 );
@@ -118,7 +118,7 @@ int main(int argc, char **argv)
                 for(int i=0;i<100;i++){
                     drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
-                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::YawLogic::YAW_PALSTANCE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
                             Flight::SmoothMode::SMOOTH_ENABLE,
                             1, 0, 0, 0 );
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
                 for(int i=30;i>=0;i--){
                     drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                     Flight::VerticalLogic::VERTICAL_THRUST |
-                    Flight::YawLogic::YAW_ANGLE |
+                    Flight::YawLogic::YAW_PALSTANCE |
                     Flight::HorizontalCoordinate::HORIZONTAL_BODY |
                     Flight::SmoothMode::SMOOTH_ENABLE,
                     0, 0, i, 0 );
