@@ -11,7 +11,7 @@ static void Display_Main_Menu(void)
 {
     printf("\r\n");
     printf("+-------------------------- < Main menu > ------------------------+\n");
-	printf("| [a] SDK Version Query         | [s] Virtual RC Test             |\n");
+    printf("| [a] Kelly action         | [s] Virtual RC Test             |\n");
 	printf("| [b] Request Control           | [t] Set Sync Flag Test          |\n");	
 	printf("| [c] Release Control           | [u] Set Msg Frequency Test      |\n");	
 	printf("| [d] Takeoff                   | [v] Waypoint Mission Upload     |\n");	
@@ -97,7 +97,19 @@ int main(int argc, char **argv)
         {
 			case 'a':
 				/* SDK version query*/
-				drone->check_version();
+                //drone->check_version();
+
+                drone->request_sdk_permission_control();
+                drone->takeoff();
+                drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
+                        Flight::VerticalLogic::VERTICAL_VELOCITY |
+                        Flight::YawLogic::YAW_ANGLE |
+                        Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                        Flight::SmoothMode::SMOOTH_ENABLE,
+                        1, 0, 0, 0 );
+                sleep(2);
+                drone->landing();
+
 				break;
             case 'b':
                 /* request control ability*/
