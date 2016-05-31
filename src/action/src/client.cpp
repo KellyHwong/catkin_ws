@@ -102,6 +102,19 @@ int main(int argc, char **argv)
                 drone->request_sdk_permission_control();
                 drone->takeoff();
                 printf("Taking off finished!");
+                sleep(4);
+
+                for(int i=0;i<100;i++){
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
+                            Flight::VerticalLogic::VERTICAL_VELOCITY |
+                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                            Flight::SmoothMode::SMOOTH_ENABLE,
+                            0, 0, 0, 0 );
+                    if( (i%10)==0 ) printf("Steady...\n");
+                    usleep(10*1000);
+                }
+
                 for(int i=0;i<100;i++){
                     drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
@@ -112,6 +125,7 @@ int main(int argc, char **argv)
                     if( (i%10)==0 ) printf("Controlling horizontal velocity...\n");
                     usleep(10*1000);
                 }
+
                 //sleep(1);
                 //drone->landing(); // landing函数是否只能在GPS下使用呢？
                 for(int i=30;i>=0;i--){
@@ -121,6 +135,7 @@ int main(int argc, char **argv)
                     Flight::HorizontalCoordinate::HORIZONTAL_BODY |
                     Flight::SmoothMode::SMOOTH_ENABLE,
                     0, 0, i, 0 );
+                    if( (i%3)==0 ) printf("Landing...\n");
                 }
                 printf("Landing finished!\n");
 				break;
