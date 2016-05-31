@@ -1,4 +1,4 @@
-#include "ros/ros.h"
+﻿#include "ros/ros.h"
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -15,9 +15,46 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <cstdio>
+#include <iostream>
+#include "TagDetector.h"
+#include "DebugImage.h"
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <sstream>
+
+//opencv1
 #include "cv.h"
 #include "highgui.h"
+
 #include "djicam.h"
+
+#define TEST_TAG_FAMILY "Tag36h10"
+
+typedef struct TagTestOptions {
+  TagTestOptions() :
+      show_debug_info(false),
+      show_timing(false),
+      show_results(false),
+      be_verbose(false),
+      no_images(false),
+      generate_output_files(false),
+      params(),
+      family_str(TEST_TAG_FAMILY),
+      error_fraction(1){
+  }
+  bool show_debug_info;
+  bool show_timing;
+  bool show_results;
+  bool be_verbose;
+  bool no_images;
+  bool generate_output_files;
+  TagDetectorParams params;
+  std::string family_str;
+  double error_fraction;
+} TagTestOptions;
 
 typedef unsigned char   BYTE;
 #define IMAGE_W 1280
@@ -173,6 +210,12 @@ IplImage* YUV420_To_IplImage(unsigned char* pYUV420, int width, int height)
 
 int main(int argc, char **argv)
 {
+    TagTestOptions opts;
+    opts.family_str = TEST_TAG_FAMILY;
+    TagFamily family(opts.family_str);
+    TagDetector detector(family, opts.params);
+    TagDetectionArray detections;
+
 	ros::init(argc,argv,"image_raw");
 	int ret,nKey;
 	int nState = 1;
@@ -181,12 +224,12 @@ int main(int argc, char **argv)
 	int gray_or_rgb = 0;
 	int to_mobile = 0;
 
-	IplImage *pRawImg;
+    IplImage *pRawImg;
 	IplImage *pImg;
 	unsigned char *pData;
 
-    //int mode = GETBUFFER_MODE;
-    int mode = DISPLAY_MODE;
+    int mode = GETBUFFER_MODE;
+    //int mode = DISPLAY_MODE;
 
 
 	ros::NodeHandle nh_private("~");
@@ -256,7 +299,7 @@ int main(int argc, char **argv)
 
 			if(gray_or_rgb){
 				NV12ToRGB(buffer,pData,1280,720);
-				memcpy(pRawImg->imageData,pData,FRAME_SIZE);
+                memcpy(pRawImg->imageData,pData,FRAME_SIZE);
 			}else{
 				memcpy(pRawImg->imageData,buffer,FRAME_SIZE/3);
 			}
@@ -271,6 +314,37 @@ int main(int argc, char **argv)
 				cvi.encoding = "mono8";
 			}
 			cvi.image = pImg;
+
+            //
+            cv::Mat matImg(pImg,0);
+            if(nCount <= 100) {
+                printf("saving pictures...\n");
+                char* home = "//home//ubuntu//";
+
+                std::stringstream sstream;
+                sstream << "my_image" << nCount << ".png";
+
+                ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
+
+                while (std::max(matImg.rows, matImg.cols) > 800) {
+                  cv::Mat tmp;
+                  cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
+                  matImg = tmp;
+                }
+                cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
+                detector.process(matImg, opticalCenter, detections);
+
+                if(detections.size() > 0) {
+                  std::cout << "Got " << detections.size() << " detections " << "\n";
+                  for (size_t i=0; i<detections.size(); ++i) {
+                    const TagDetection& d = detections[i];
+                    std::cout << " - Detection: id = " << d.id << ", "
+                               << "code = " << d.code << ", "
+                                  << "rotation = " << d.rotation << "\n";
+                  }
+                }
+            }
+
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
 			cam_info.header.stamp = time;

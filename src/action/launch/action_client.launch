@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="action" type="action" name="action" output="screen">
+	</node>
+</launch>
