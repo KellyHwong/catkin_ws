@@ -128,7 +128,7 @@ bool YUV420_To_BGR24(unsigned char *puc_y, unsigned char *puc_u, unsigned char *
 
 	int temp = 0;
 
-	BYTE* rData = rgbData; 
+	BYTE* rData = rgbData;
 	BYTE* gData = rgbData + baseSize;
 	BYTE* bData = gData + baseSize;
 
@@ -187,9 +187,9 @@ IplImage* YUV420_To_IplImage(unsigned char* pYUV420, int width, int height)
 
 	int temp = 0;
 
-	BYTE* yData = pYUV420; 
-	BYTE* uData = pYUV420 + baseSize; 
-	BYTE* vData = uData + (baseSize>>2); 
+	BYTE* yData = pYUV420;
+	BYTE* uData = pYUV420 + baseSize;
+	BYTE* vData = uData + (baseSize>>2);
 
 	if(YUV420_To_BGR24(yData, uData, vData, pRGB24, width, height) == false || !pRGB24)
 	{
@@ -313,37 +313,41 @@ int main(int argc, char **argv)
 			}else{
 				cvi.encoding = "mono8";
 			}
-			cvi.image = pImg;
 
-            //
-            cv::Mat matImg(pImg,0);
-            if(nCount <= 100) {
-                printf("saving pictures...\n");
-                char* home = "//home//ubuntu//";
+      //cvi.image = pImg;
 
-                std::stringstream sstream;
-                sstream << "my_image" << nCount << ".png";
 
-                ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
+      //pRawImg
+      //cv::Mat matImg(pImg,0);
+      cv::Mat matImg(pRawImg,0); //1280*720
 
-                while (std::max(matImg.rows, matImg.cols) > 800) {
-                  cv::Mat tmp;
-                  cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
-                  matImg = tmp;
-                }
-                cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
-                detector.process(matImg, opticalCenter, detections);
+      //printf("saving pictures...\n");
+      //char* home = "//home//ubuntu//";
 
-                if(detections.size() > 0) {
-                  std::cout << "Got " << detections.size() << " detections " << "\n";
-                  for (size_t i=0; i<detections.size(); ++i) {
-                    const TagDetection& d = detections[i];
-                    std::cout << " - Detection: id = " << d.id << ", "
-                               << "code = " << d.code << ", "
-                                  << "rotation = " << d.rotation << "\n";
-                  }
-                }
-            }
+      //std::stringstream sstream;
+      //sstream << "my_image" << nCount << ".png";
+      //ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
+
+      while (std::max(matImg.rows, matImg.cols) > 800) {
+        cv::Mat tmp;
+        cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
+        matImg = tmp;
+      }
+      cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
+      detector.process(matImg, opticalCenter, detections);
+
+      if(detections.size() > 0) {
+        std::cout << "AprilTag detected!" << "\n";
+      }
+      // if(detections.size() > 0) {
+      //   std::cout << "Got " << detections.size() << " detections " << "\n";
+      //   for (size_t i=0; i<detections.size(); ++i) {
+      //     const TagDetection& d = detections[i];
+      //     std::cout << " - Detection: id = " << d.id << ", "
+      //                << "code = " << d.code << ", "
+      //                   << "rotation = " << d.rotation << "\n";
+      //   }
+      // }
 
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
@@ -355,8 +359,9 @@ int main(int argc, char **argv)
 			nCount++;
 
 		}
-		else 
+		else
 			break;
+
 		usleep(1000);
 	}
 	while(!manifold_cam_exit())
