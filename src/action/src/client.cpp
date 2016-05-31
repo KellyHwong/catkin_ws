@@ -114,7 +114,7 @@ int main(int argc, char **argv)
                 }
                 //sleep(1);
                 //drone->landing(); // landing函数是否只能在GPS下使用呢？
-                for(int i=30;i>=0;i--)
+                for(int i=30;i>=0;i--){
                     drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_VELOCITY |
                     Flight::VerticalLogic::VERT_THRUST |
                     Flight::YawLogic::YAW_RATE |
