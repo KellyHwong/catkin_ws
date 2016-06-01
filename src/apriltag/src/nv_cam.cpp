@@ -330,10 +330,13 @@ int main(int argc, char **argv)
       //pRawImg
       //cv::Mat matImg(pImg,0);
       cv::Mat matImg(pRawImg,0); //1280*720
-      //std::cout << "Camera picture reading success!" << "\n";
+
 
       cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
+
       //ROS_ASSERT( cv::imwrite("debug.png",matImg) );
+      std::cout << "Camera picture reading success!" << "\n";
+
       clock_t start = clock();
       detector.process(matImg, opticalCenter, detections);
       clock_t end = clock();
