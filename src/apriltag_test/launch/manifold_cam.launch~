@@ -1,7 +1,0 @@
-<launch>
-	<node pkg="apriltag" type="apriltag" name="apriltagy" output="screen">
-		<!-- node parameters -->
-		<param name="gray_or_rgb" type="int" value="1"/>
-		<param name="to_mobile" type="int" value="0"/>
-	</node>
-</launch>
