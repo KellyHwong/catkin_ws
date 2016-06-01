@@ -1,11 +1,4 @@
-﻿/*
-用于测试AprilTag码指标的代码
-*/
-#define TEST_NAME "dist1"
-#define TEST_ID 6
-#define TEST_TIMES 201
-
-#include "ros/ros.h"
+﻿#include "ros/ros.h"
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -24,7 +17,6 @@
 #include <unistd.h>
 
 #include <cstdio>
-#include <time.h>
 #include <iostream>
 #include "TagDetector.h"
 #include "DebugImage.h"
@@ -224,16 +216,6 @@ int main(int argc, char **argv)
     TagDetector detector(family, opts.params);
     TagDetectionArray detections;
 
-    int testBeginFlag = 0;
-    int testCount = 0;
-
-    int testSuccessTime = 0; //ID号与待测图片相同的次数
-    double testSumTime = 0;
-    double testAverageTime = 0;
-    double testSuccessRate = 0;
-    int testEndFlag = 0;
-
-
 	ros::init(argc,argv,"image_raw");
 	int ret,nKey;
 	int nState = 1;
@@ -308,6 +290,8 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
+    int aprilTagCount = 0;
+
 	while(1)
 	{
 		ret = manifold_cam_read(buffer, &nframe, 1);
@@ -332,62 +316,45 @@ int main(int argc, char **argv)
 				cvi.encoding = "mono8";
 			}
 
-      //cvi.image = pImg;
-      //pRawImg
-      //cv::Mat matImg(pImg,0);
-      cv::Mat matImg(pRawImg,0); //1280*720
+          //cvi.image = pImg;
+          //pRawImg
+          //cv::Mat matImg(pImg,0);
+          cv::Mat matImg(pRawImg,0); //1280*720
 
-      /* while (std::max(matImg.rows, matImg.cols) > 800) {
-        cv::Mat tmp;
-        cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
-        matImg = tmp;
-      } */
-      cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
+          /* while (std::max(matImg.rows, matImg.cols) > 800) {
+            cv::Mat tmp;
+            cv::resize(matImg, tmp, cv::Size(0,0), 0.5, 0.5);
+            matImg = tmp;
+          } */
+          cv::Point2d opticalCenter(0.5*matImg.rows, 0.5*matImg.cols);
 
-      clock_t start = clock();
-      detector.process(matImg, opticalCenter, detections);
-      clock_t end = clock();
+          clock_t start = clock();
+          detector.process(matImg, opticalCenter, detections);
+          clock_t end = clock();
 
-      if( detections.size()>0 ) { //&& (testBeginFlag==0)
-          std::cout << "AprilTag detected! Begin to test." << "\n";
-          std::cout << "Saving tested picture and begin to test." << "\n";
-          //char* home = "//home//ubuntu//";
-          std::stringstream sstream;
-          sstream << TEST_NAME << ".png";
-          ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
-          testBeginFlag = 1;
-      }
+          if(detections.size() > 0) {
+              aprilTagCount++;
+               std::cout << "AprilTag detected!" << "\n";
+               std::cout << "Cost time:" << double(end-start)/CLOCKS_PER_SEC << "seconds\n";
 
-      if(testBeginFlag==1){
-        if(testCount<TEST_TIMES){
-          testSumTime += double(end-start)/CLOCKS_PER_SEC;
+               //char* home = "//home//ubuntu//";
+                if(aprilTagCount<=100){
+                    std::stringstream sstream;
+                    printf("saving pictures...\n");
+                     sstream << "imageApril" << aprilTagCount << ".png";
+                     ROS_ASSERT( cv::imwrite(sstream.str(),matImg) );
+                }
 
-          if(detections.size() == 1) {
-            const TagDetection& d = detections[0];
-            if(d.id == 6) {
-              testSuccessTime ++;
-            }
           }
-          testCount ++;
-        }
-        else {
-          if (testEndFlag == 0) {
-            testAverageTime = testSumTime / TEST_TIMES;
-            testSuccessRate = testSuccessTime / TEST_TIMES;
-            std::cout << "Test Average Time:" << testAverageTime << "\n";
-            std::cout << "Test Success Rate:" << testSuccessRate << "\n";
-            testEndFlag = 1;
-          }
-      }
-      // if(detections.size() > 0) {
-      //   std::cout << "Got " << detections.size() << " detections " << "\n";
-      //   for (size_t i=0; i<detections.size(); ++i) {
-      //     const TagDetection& d = detections[i];
-      //     std::cout << " - Detection: id = " << d.id << ", "
-      //                << "code = " << d.code << ", "
-      //                   << "rotation = " << d.rotation << "\n";
-      //   }
-      // }
+          // if(detections.size() > 0) {
+          //   std::cout << "Got " << detections.size() << " detections " << "\n";
+          //   for (size_t i=0; i<detections.size(); ++i) {
+          //     const TagDetection& d = detections[i];
+          //     std::cout << " - Detection: id = " << d.id << ", "
+          //                << "code = " << d.code << ", "
+          //                   << "rotation = " << d.rotation << "\n";
+          //   }
+          // }
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
 			cam_info.header.stamp = time;
@@ -411,5 +378,4 @@ int main(int argc, char **argv)
 	fclose(fp);
 	sleep(1);
 	return 0;
-    }
 }
