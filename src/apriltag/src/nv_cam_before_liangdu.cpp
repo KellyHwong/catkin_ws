@@ -32,11 +32,8 @@
 #include "djicam.h"
 #define TEST_NAME "dist1"
 #define TEST_ID 6
-#define TEST_TIMES 100
+#define TEST_TIMES 201
 #define TEST_TAG_FAMILY "Tag36h10"
-
-#define SET_ALPHA 1.0// [1.0-3.0]
-#define SET_BETA 20// [0-100] 20 40 60 80
 
 typedef struct TagTestOptions {
   TagTestOptions() :
@@ -212,7 +209,6 @@ IplImage* YUV420_To_IplImage(unsigned char* pYUV420, int width, int height)
   delete [] pRGB24;
   return image;
 }
-using namespace cv;
 
 int main(int argc, char **argv)
 {
@@ -230,9 +226,6 @@ int main(int argc, char **argv)
   double testAverageTime = 0;
   double testSuccessRate = 0;
   int testEndFlag = 0;
-
-  double alpha = SET_ALPHA; /**< 控制对比度 */
-  int beta = SET_BETA;  /**< 控制亮度 */
 
   ros::init(argc,argv,"image_raw");
   int ret,nKey;
@@ -344,22 +337,8 @@ int main(int argc, char **argv)
       //ROS_ASSERT( cv::imwrite("debug.png",matImg) );
       std::cout << "Camera picture reading success!" << "\n";
 
-      /// 执行运算 new_image(i,j) = alpha*matImg(i,j) + beta
-      Mat new_image = Mat::zeros( matImg.size(), matImg.type() );
-      for( int y = 0; y < matImg.rows; y++ )
-      {
-          for( int x = 0; x < matImg.cols; x++ )
-          {
-              for( int c = 0; c < 3; c++ )
-              {
-                  new_image.at<Vec3b>(y,x)[c] = saturate_cast<uchar>( alpha*( matImg.at<Vec3b>(y,x)[c] ) + beta );
-              }
-          }
-      }
-      std::cout << "Camera picture reading success!" << "\n";
-
       clock_t start = clock();
-      detector.process(new_image, opticalCenter, detections);
+      detector.process(matImg, opticalCenter, detections);
       clock_t end = clock();
 
       if( (detections.size()>0)&&(testBeginFlag==0) ){ //&& (testBeginFlag==0)
